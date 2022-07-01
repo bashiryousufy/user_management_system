@@ -15,7 +15,7 @@ class AuthController extends Controller
         $registerData = $request->validate([
             'name' => 'max:128|required',
             'email' => 'email|required|unique:users',
-            'password' => 'required'
+            'password' => 'required|string|min:6'
         ]);
 
         //create user using validated data

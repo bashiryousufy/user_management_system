@@ -29,5 +29,10 @@ Route::post('/login',[AuthController::class, 'login']);
 
 Route::group(['middleware' => 'auth:api'], function(){
 
+    //User crud routes
     Route::get('/users', [UserController::class, 'getAllUsers']);
+    Route::get('/users/{id}',[UserController::class, 'getSingleUserByID']);
+    Route::post('/users', [UserController::class, 'createUser']);
+    Route::put('/users/{id}',[UserController::class, 'updateUserByID']);
+    Route::delete('/users/{id}',[UserController::class, 'deleteUserByID']);
 });
