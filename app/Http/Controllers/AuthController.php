@@ -6,10 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-
 class AuthController extends Controller
 {
-    public function register(Request $request){
+    public function register(Request $request)
+    {
 
         //validate parameters
         $registerData = $request->validate([
@@ -32,10 +32,11 @@ class AuthController extends Controller
         return response([
             'user' => $user,
             'access_token' => $accessToken
-        ],201);
+        ], 201);
     }
 
-    public function login(Request $request){
+    public function login(Request $request)
+    {
 
         //validate parameters
         $loginCreds = $request->validate([
@@ -43,12 +44,12 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        $user = User::where('email' , $loginCreds['email'])->first();
+        $user = User::where('email', $loginCreds['email'])->first();
         //invalid login credentials
-        if(!$user || !Hash::check($loginCreds['password'], $user->password)){
+        if (!$user || !Hash::check($loginCreds['password'], $user->password)) {
             return response([
                 'message'=> 'invalid credentials!'
-            ],404);
+            ], 404);
         }
 
 
