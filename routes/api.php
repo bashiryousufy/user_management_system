@@ -35,4 +35,9 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::post('/users', [UserController::class, 'createUser']);
     Route::put('/users/{id}',[UserController::class, 'updateUserByID']);
     Route::delete('/users/{id}',[UserController::class, 'deleteUserByID']);
+
+
+    //import csv file to bulk create, update, delete
+
+    Route::post('/users/csv/bulk/{action}', [UserController::class, 'handleBulkAction']);
 });

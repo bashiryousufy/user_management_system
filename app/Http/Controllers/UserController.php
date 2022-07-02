@@ -9,15 +9,17 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function getSingleUserByID($id){
+    //get a single user by their id
+    public function getSingleUserByID($id)
+    {
         $user = User::find($id);
 
-        if(!empty($user)){
+        if (!empty($user)) {
             return response()->json(new UsersResource($user));
-        }else{
+        } else {
             return response()->json([
                 'message' => 'User not found!'
-            ],404);
+            ], 404);
         }
     }
 
@@ -69,6 +71,7 @@ class UserController extends Controller
         ], 201);
     }
 
+    //function to update a user by their ID
     public function updateUserByID(Request $request, $id)
     {
         $request->validate([
@@ -97,6 +100,7 @@ class UserController extends Controller
         }
     }
 
+    //function to delete a user by their ID
     public function deleteUserByID($id)
     {
         $rowEffected = User::where('id', $id)->delete();
@@ -108,5 +112,58 @@ class UserController extends Controller
                 'message' => 'The user with userID '.$id.' does not exist!'
             ], 404);
         }
+    }
+
+    public function handleBulkAction(Request $request, $action)
+    {
+        $request->validate([
+            'csv_import' => 'required|mimes:csv,txt'
+        ]);
+
+        $arrayOfUsers = $this->csvToArray($request->csv_import);
+
+
+        for ($i=0; $i < count($arrayOfUsers); $i++) {
+            if($action == 'create'){
+                User::firstOrCreate($arrayOfUsers[$i]);
+            }
+
+            if($action == 'edit'){
+                //edit
+                User::where('email', $arrayOfUsers[$i]['email'])->update($arrayOfUsers[$i]);
+            }
+
+            if($action == 'delete'){
+                //delete
+                User::where('email', $arrayOfUsers[$i]['email'])->delete();
+            }
+        }
+
+        return response()->json(
+            ['message' => 'Users have been '.$action.'ed successfully'],201
+        );
+    }
+
+    //function which converts csv file into php array
+    public function csvToArray($filename = '', $delimiter = ',')
+    {
+        if (!file_exists($filename) || !is_readable($filename)) {
+            return false;
+        }
+
+        $header = null;
+        $data = array();
+        if (($handle = fopen($filename, 'r')) !== false) {
+            while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
+                if (!$header) {
+                    $header = $row;
+                } else {
+                    $data[] = array_combine($header, $row);
+                }
+            }
+            fclose($handle);
+        }
+
+        return $data;
     }
 }
