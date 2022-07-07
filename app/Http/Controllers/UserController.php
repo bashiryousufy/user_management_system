@@ -26,11 +26,16 @@ class UserController extends Controller
     //function to get all the user's details
     public function getAllUsers(Request $request)
     {
+        $request->validate([
+            'name' => 'max:128',
+            'email' => 'max:128',
+            'perpage' => 'numeric',
+        ]);
         $users = [];
         $paginate = 10;
 
         if ($request->has('perpage')) {
-            $paginate = $request->paginate;
+            $paginate = $request->perpage;
         }
 
         if (!$request->has('name') || !$request->has('email')) {
@@ -39,12 +44,18 @@ class UserController extends Controller
 
         //check if email param exist
         if ($request->has('email')) {
-            $users = User::where('email', 'LIKE', '%'.$request->email.'%')->get();
+            $users = User::where('email', 'LIKE', '%'.$request->email.'%')->paginate($paginate);
         }
 
         //check if name param exist
         if ($request->has('name')) {
-            $users = User::where('name', 'LIKE', '%'.$request->name.'%')->get();
+            $users = User::where('name', 'LIKE', '%'.$request->name.'%')->paginate($paginate);
+        }
+
+        //check if both name and email param exists
+        if($request->has('name') && $request->has('email')){
+            $users = User::where('name', 'LIKE', '%'.$request->name.'%')->where('email', 'LIKE', '%'.$request->email.'%')->paginate($paginate);
+
         }
 
         return UsersResource::collection($users);
@@ -125,11 +136,16 @@ class UserController extends Controller
 
         for ($i=0; $i < count($arrayOfUsers); $i++) {
             if($action == 'create'){
+                //hash the password
+                $arrayOfUsers[$i]['password'] = Hash::make($arrayOfUsers[$i]['password']);
                 User::firstOrCreate($arrayOfUsers[$i]);
             }
 
             if($action == 'edit'){
+                //hash the password
+                $arrayOfUsers[$i]['password'] = Hash::make($arrayOfUsers[$i]['password']);
                 //edit
+
                 User::where('email', $arrayOfUsers[$i]['email'])->update($arrayOfUsers[$i]);
             }
 
